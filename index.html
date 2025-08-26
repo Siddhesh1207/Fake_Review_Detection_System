@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Review Detection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔎 Fake Review Detection System</h1>
+        <p>Enter a review below to analyze its authenticity.</p>
+        
+        <textarea id="review-text" placeholder="Paste the review here..."></textarea>
+        <button id="analyze-btn">Analyze Review</button>
+        
+        <div id="result-container" class="hidden">
+            <h2>Analysis Result</h2>
+            <p id="prediction-text"></p>
+            <p id="score-text"></p>
+        </div>
+    </div>
+    <script src="connection.js"></script>
+</body>
+</html>
