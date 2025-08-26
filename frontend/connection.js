@@ -5,7 +5,7 @@ const resultContainer = document.getElementById('result-container');
 const predictionText = document.getElementById('prediction-text');
 const scoreText = document.getElementById('score-text');
 
-const API_URL = 'https://fake-review-detection-system-km43.onrender.com/';
+const API_URL = 'https://fake-review-detection-system-km43.onrender.com/predict';
 
 // Add an event listener to the button
 analyzeBtn.addEventListener('click', () => {
