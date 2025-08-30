@@ -151,3 +151,5 @@ if __name__ == '__main__':
         print(review_df.head())
         review_df.to_csv('scraped_booking_reviews.csv', index=False, encoding='utf-8-sig')
         print("\nSuccessfully saved scraped reviews to 'scraped_booking_reviews.csv'")
+
+        jdckcnscnsknknkcsn
