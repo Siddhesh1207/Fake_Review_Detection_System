@@ -7,6 +7,7 @@ CORS(app)
 
 import torch.nn.functional as F
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
+from scraper import scrape_booking_reviews 
 
 # --- 2. Load the Saved Model and Tokenizer ---
 # This part is run only once when the app starts
@@ -76,6 +77,41 @@ def handle_prediction():
     except Exception as e:
         print(f"Error during prediction: {e}")
         return jsonify({'error': 'Failed to process the review.'}), 500
+    
+@app.route('/scrape-and-predict', methods=['POST'])
+def handle_scraping():
+    # Check if the request contains a URL
+    if not request.json or 'url' not in request.json:
+        return jsonify({'error': 'Invalid request. Please provide a "url" key.'}), 400
+    
+    target_url = request.json['url']
+    
+    try:
+        # Step 1: Call your scraper to get the reviews
+        print(f"Starting scrape for URL: {target_url}")
+        reviews_df = scrape_booking_reviews(target_url, max_reviews=50)
+        
+        if reviews_df.empty:
+            return jsonify({'error': 'Could not scrape any reviews from the URL.'}), 404
+
+        # Step 2: Loop through the scraped reviews and analyze each one
+        results = []
+        for review_text in reviews_df['review']:
+            # Use your existing prediction function
+            prediction, score = predict_review(review_text)
+            results.append({
+                'review_text': review_text[:100] + "...", # Send a snippet back
+                'prediction': prediction.upper(),
+                'authenticity_score': f"{score:.2f}"
+            })
+        
+        print("Scraping and analysis complete.")
+        # Step 3: Return the full list of results
+        return jsonify(results)
+
+    except Exception as e:
+        print(f"An error occurred during scraping/analysis: {e}")
+        return jsonify({'error': 'An internal error occurred.'}), 500
 
 # --- 5. Run the Flask App ---
 if __name__ == '__main__':
