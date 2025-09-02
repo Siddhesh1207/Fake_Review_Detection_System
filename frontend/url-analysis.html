@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Analysis - VeriSure AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header" id="header">
+            <div class="container">
+                <div class="nav-brand">
+                    <img src="Colorful Modern Infinity Technology Free Logo.png" alt="VeriSure Logo" class="logo-img">
+                    <h2 class="logo">VeriSure</h2>
+                </div>
+                <nav class="nav" id="nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="text-analysis.html" class="nav-link">Text Analysis</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                </nav>
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- URL Analysis Section -->
+        <section class="analysis-page">
+            <div class="container">
+                <div class="page-header">
+                    <h1 class="page-title">URL Analysis</h1>
+                    <p class="page-subtitle">Analyze reviews from websites by providing the URL</p>
+                </div>
+                
+                <div class="analysis-card">
+                    <div class="input-section">
+                        <label for="url-input" class="input-label">Enter URL to Analyze</label>
+                        <input type="url" id="url-input" class="url-input" placeholder="Enter a Booking.com hotel URL...">
+                        <button class="btn btn-primary" id="analyze-url-btn">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                            </svg>
+                            Scrape & Analyze
+                        </button>
+                    </div>
+                    
+                    <div class="result-section" id="result-box" style="display: none;">
+                        <h3 class="result-title">Analysis Results</h3>
+                        <div class="result-content">
+                            <!-- Results will be inserted here -->
+                        </div>
+                        <button id="download-btn" class="btn btn-secondary hidden">Download Report (CSV)</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer" id="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-left">
+                        <div class="footer-links">
+                            <a href="#about" class="footer-link">About</a>
+                            <a href="#team" class="footer-link">Team</a>
+                            <a href="#contact" class="footer-link">Contact</a>
+                            <a href="#privacy" class="footer-link">Privacy</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2025 VeriSure AI. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script src="connection.js"></script>
+</body>
+</html>

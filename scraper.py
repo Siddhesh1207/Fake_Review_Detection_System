@@ -106,9 +106,6 @@ def scrape_booking_reviews(url, max_reviews=50):
             title_element = card.select_one('h4[data-testid="review-title"]')
             review_title = title_element.get_text(strip=True) if title_element else "No Title"
 
-            # --- MODIFICATION START ---
-            # The code for scraping positive/negative text has been removed.
-
             # Avoid duplicate reviews based on the title text
             if review_title and review_title not in unique_reviews:
                 unique_reviews.add(review_title)
@@ -151,5 +148,3 @@ if __name__ == '__main__':
         print(review_df.head())
         review_df.to_csv('scraped_booking_reviews.csv', index=False, encoding='utf-8-sig')
         print("\nSuccessfully saved scraped reviews to 'scraped_booking_reviews.csv'")
-
-        jdckcnscnsknknkcsn

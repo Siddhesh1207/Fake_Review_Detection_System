@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Review Detection</title>
+    <link rel="stylesheet" type="text/css" href="http://localhost:5000/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔎 Fake Review Detection System</h1>
+        
+        <div class="section">
+            <h2>Analyze a Single Review</h2>
+            <textarea id="review-text" placeholder="Paste any review here..."></textarea>
+            <button id="analyze-btn">Analyze Single Review</button>
+            <div id="result-container" class="hidden">
+            </div>
+        </div>
+
+        <hr>
+        
+        <div class="section">
+            <h2>Scrape & Analyze from a URL</h2>
+            <input type="url" id="url-input" placeholder="Enter a Booking.com hotel URL...">
+            <button id="scrape-btn">Scrape & Analyze</button>
+            
+            <div id="scrape-results-container">
+            </div>
+            
+            <button id="download-btn" class="hidden">Download Report (CSV)</button>
+        </div>
+    </div>
+    <script src="connection.js"></script>
+</body>
+</html>
