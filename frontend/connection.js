@@ -1,6 +1,6 @@
 // --- API Endpoints ---
-const PREDICT_API_URL = 'http://127.0.0.1:5000/predict';
-const SCRAPE_API_URL = 'http://127.0.0.1:5000/scrape-and-predict';
+const PREDICT_API_URL = 'https://fake-review-detection-system-km43.onrender.com/predict';
+const SCRAPE_API_URL = 'https://fake-review-detection-system-km43.onrender.com/scrape-and-predict';
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
