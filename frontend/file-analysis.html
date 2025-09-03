@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Analysis - VeriSure AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Header -->
+      <header class="header" id="header">
+        <div class="container">
+          <div class="nav-brand">
+                        <div class="logo-img"></div>
+            <h2 class="logo">VeriSure</h2>
+          </div>
+          <nav class="nav" id="nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="text-analysis.html" class="nav-link">Text Analysis</a>
+            <a href="url-analysis.html" class="nav-link">URL Analysis</a>
+            <a href="#about" class="nav-link">About</a>
+          </nav>
+          <button class="mobile-menu-btn" id="mobile-menu-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- File Analysis Section -->
+      <section class="analysis-page">
+        <div class="container">
+          <div class="page-header">
+            <h1 class="page-title">Bulk Review Analysis</h1>
+            <p class="page-subtitle">Upload a CSV file containing reviews to analyze them in bulk</p>
+          </div>
+          
+          <div class="analysis-card">
+            <div class="input-section">
+              <form id="file-upload-form" class="file-upload-container" onsubmit="event.preventDefault();">
+                <label for="file-input" class="input-label">Upload CSV File</label>
+                <div class="file-upload-ui">
+                  <div class="file-input-wrapper">
+                    <div class="upload-zone">
+                      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
+                      <p class="upload-text">Choose a CSV file or drag it here</p>
+                      <input 
+                        type="file" 
+                        id="file-input" 
+                        name="file"
+                        accept=".csv"
+                        class="file-input" 
+                        onclick="this.value = null;"
+                    </div>
+                    <div class="file-info" style="display: none;">
+                      <span id="file-name">No file selected</span>
+                      <button type="button" class="btn btn-small" id="remove-file">✕</button>
+                    </div>
+                    <div class="upload-progress" style="display: none;">
+                      <div class="upload-progress-bar">
+                        <div class="progress-fill"></div>
+                      </div>
+                      <span class="upload-status">Uploading... <span id="upload-percentage">0%</span></span>
+                    </div>
+                  </div>
+                  <p class="file-format-info">Your CSV file should contain a column named "review" with the reviews to analyze</p>
+                  <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary" id="analyze-file-btn" disabled>
+                      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      Analyze File
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            
+            <div class="result-section" id="file-result" style="display: none;">
+              <h3 class="result-title">Analysis Results</h3>
+              <div class="result-content">
+                <div class="progress-container" style="display: none;">
+                  <div class="progress-bar">
+                    <div class="progress"></div>
+                  </div>
+                  <p class="progress-text">Analyzing reviews... <span id="progress-percentage">0%</span></p>
+                </div>
+                <div class="stats-container" style="display: none;">
+                  <div class="stat-item">
+                    <span class="stat-label">Total Reviews:</span>
+                    <span class="stat-value" id="total-reviews">--</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Real Reviews:</span>
+                    <span class="stat-value" id="real-reviews">--</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Fake Reviews:</span>
+                    <span class="stat-value" id="fake-reviews">--</span>
+                  </div>
+                </div>
+                <button id="download-results-btn" class="btn btn-secondary hidden">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Download Results
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer" id="footer">
+        <div class="container">
+          <div class="footer-content">
+            <div class="footer-left">
+              <div class="footer-links">
+                <a href="#about" class="footer-link">About</a>
+                <a href="#team" class="footer-link">Team</a>
+                <a href="#contact" class="footer-link">Contact</a>
+                <a href="#privacy" class="footer-link">Privacy</a>
+              </div>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p>&copy; 2025 VeriSure AI. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <script src="upload.js"></script>
+    <script src="logo-placeholder.js"></script>
+    <script src="connection.js"></script>
+  </body>
+</html>

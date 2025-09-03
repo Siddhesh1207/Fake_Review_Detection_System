@@ -1,13 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
 import torch
-
-app = Flask(__name__)
-CORS(app) 
-
+import pandas as pd
+from werkzeug.utils import secure_filename
+import os
 import torch.nn.functional as F
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
 from scraper import scrape_booking_reviews 
+
+app = Flask(__name__)
+# Configure CORS to allow cross-origin requests
+CORS(app) 
 
 # --- 2. Load the Saved Model and Tokenizer ---
 # This part is run only once when the app starts
@@ -53,7 +56,7 @@ def predict_review(review_text):
 
     return predicted_label, authenticity_score
 
-# --- 4. Define the API Endpoint ---
+# --- 4. Define the API Endpoints ---
 @app.route('/predict', methods=['POST'])
 def handle_prediction():
     """
@@ -112,6 +115,53 @@ def handle_scraping():
     except Exception as e:
         print(f"An error occurred during scraping/analysis: {e}")
         return jsonify({'error': 'An internal error occurred.'}), 500
+
+# NEW: File Analysis Endpoint
+@app.route('/analyze-file', methods=['POST'])
+def analyze_file():
+    print("File analysis request received")
+    
+    # Check if a file was uploaded
+    if 'file' not in request.files:
+        print("No file in request.files")
+        return jsonify({'error': 'No file provided'}), 400
+        
+    file = request.files['file']
+    print(f"Received file: {file.filename}")
+    
+    if file.filename == '':
+        print("Empty filename")
+        return jsonify({'error': 'No file selected'}), 400
+        
+    if not file.filename.endswith('.csv'):
+        print(f"Invalid file type: {file.filename}")
+        return jsonify({'error': 'File must be a CSV'}), 400
+
+    try:
+        print("Processing file upload")
+        # Read the CSV file directly from the request stream
+        df = pd.read_csv(file)
+        
+        if 'review' not in df.columns:
+            print("No 'review' column found")
+            return jsonify({'error': 'CSV must contain a "review" column'}), 400
+
+        results = []
+        # Process each review in the DataFrame
+        for review in df['review'].fillna(''):  # Handle any missing values
+            if isinstance(review, str) and review.strip():  # Process only non-empty string reviews
+                prediction, score = predict_review(review)
+                results.append({
+                    'review': review,
+                    'prediction': prediction.upper(),
+                    'authenticity_score': f"{score:.2f}"
+                })
+        
+        return jsonify(results)
+
+    except Exception as e:
+        print(f"Error processing file: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # --- 5. Run the Flask App ---
 if __name__ == '__main__':
