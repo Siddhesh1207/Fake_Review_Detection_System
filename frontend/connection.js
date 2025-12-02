@@ -1,7 +1,8 @@
 // --- API Endpoints ---
-const PREDICT_API_URL = 'https://fake-review-detection-system-km43.onrender.com/predict';
-const SCRAPE_API_URL = 'https://fake-review-detection-system-km43.onrender.com/scrape-and-predict';
-const FILE_ANALYSIS_URL = 'https://fake-review-detection-system-km43.onrender.com/analyze-file';
+const PREDICT_API_URL = 'http://127.0.0.1:5000/predict';
+const SCRAPE_API_URL = 'http://127.0.0.1:5000/scrape-and-predict';
+const FILE_ANALYSIS_URL = 'http://127.0.0.1:5000/analyze-file';
+const CROSS_CHECK_API_URL = 'http://127.0.0.1:5000/cross-check-review';
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         form: document.getElementById('file-upload-form'),
         input: document.getElementById('file-input'),
         button: document.getElementById('analyze-file-btn'),
-        results: document.getElementById('file-result'),
+        results: document.getElementById('file-result'), // Main container for results/errors
         uploadUI: {
             fileInfo: document.querySelector('.file-info'),
             fileName: document.getElementById('file-name'),
@@ -23,8 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         progress: {
             container: document.querySelector('.progress-container'),
-            bar: document.querySelector('.progress'),
-            percentage: document.getElementById('progress-percentage')
         },
         stats: {
             container: document.querySelector('.stats-container'),
@@ -39,121 +38,142 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fileAnalysis.form) {
         console.log('Setting up file analysis handler');
 
-        // File selection handler: Toggles the "Analyze" button and file info display
         fileAnalysis.input.addEventListener('change', (event) => {
             const file = event.target.files[0];
             
             if (file && file.name.toLowerCase().endsWith('.csv')) {
-                fileAnalysis.button.disabled = false;
-                fileAnalysis.uploadUI.fileInfo.style.display = 'flex';
-                fileAnalysis.uploadUI.fileName.textContent = file.name;
-                fileAnalysis.uploadUI.fileName.title = file.name;
+                if(fileAnalysis.button) fileAnalysis.button.disabled = false;
+                if(fileAnalysis.uploadUI.fileInfo) fileAnalysis.uploadUI.fileInfo.style.display = 'flex';
+                if(fileAnalysis.uploadUI.fileName) {
+                    fileAnalysis.uploadUI.fileName.textContent = file.name;
+                    fileAnalysis.uploadUI.fileName.title = file.name;
+                }
                 console.log('File selected:', file.name);
             } else {
-                fileAnalysis.button.disabled = true;
-                fileAnalysis.uploadUI.fileInfo.style.display = 'none';
-                fileAnalysis.uploadUI.fileName.textContent = 'No file selected';
-                fileAnalysis.uploadUI.fileName.title = '';
+                if(fileAnalysis.button) fileAnalysis.button.disabled = true;
+                if(fileAnalysis.uploadUI.fileInfo) fileAnalysis.uploadUI.fileInfo.style.display = 'none';
+                if(fileAnalysis.uploadUI.fileName) {
+                    fileAnalysis.uploadUI.fileName.textContent = 'No file selected';
+                    fileAnalysis.uploadUI.fileName.title = '';
+                }
                 if (file) {
                     alert('Please select a CSV file.');
                 }
             }
         });
 
-        // Remove file handler: Clears the selected file
         if (fileAnalysis.uploadUI.removeBtn) {
             fileAnalysis.uploadUI.removeBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                fileAnalysis.input.value = '';
-                fileAnalysis.uploadUI.fileInfo.style.display = 'none';
-                fileAnalysis.button.disabled = true;
+                if(fileAnalysis.input) fileAnalysis.input.value = '';
+                if(fileAnalysis.uploadUI.fileInfo) fileAnalysis.uploadUI.fileInfo.style.display = 'none';
+                if(fileAnalysis.button) fileAnalysis.button.disabled = true;
                 console.log('File removed');
             });
         }
         
-        // Form submission handler: Manages the entire file analysis process
-        fileAnalysis.form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log('File analysis form submitted');
+        // ## START: UPDATED AND CORRECTED SUBMIT HANDLER ##
+        // REPLACE THE ENTIRE fileAnalysis.form.addEventListener(...) block with this:
 
-            const file = fileAnalysis.input.files[0];
-            if (!file) {
-                alert('Please select a CSV file first.');
-                return;
-            }
-            
-            let progressInterval;
-            try {
-                // Update UI to loading state
-                fileAnalysis.button.disabled = true;
-                fileAnalysis.results.style.display = 'block';
-                fileAnalysis.progress.container.style.display = 'block';
-                fileAnalysis.stats.container.style.display = 'none';
-                fileAnalysis.downloadBtn.classList.add('hidden');
-                fileAnalysis.uploadUI.uploadProgress.style.display = 'block';
-                fileAnalysis.uploadUI.progressFill.style.width = '0%';
-                fileAnalysis.uploadUI.uploadPercentage.textContent = '0%';
+fileAnalysis.form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log('File analysis form submitted');
 
-                // Start a fake progress animation
-                let progress = 0;
-                progressInterval = setInterval(() => {
-                    if (progress < 90) {
-                        progress += 5;
-                        fileAnalysis.uploadUI.progressFill.style.width = `${progress}%`;
-                        fileAnalysis.uploadUI.uploadPercentage.textContent = `${progress}%`;
-                    }
-                }, 200);
+    const file = fileAnalysis.input ? fileAnalysis.input.files[0] : null;
+    if (!file) {
+        alert('Please select a CSV file first.');
+        return;
+    }
+    
+    // Add the new error display to our elements object
+    fileAnalysis.errorDisplay = document.getElementById('file-error-display');
 
-                // Create FormData and send the file to the backend
-                const formData = new FormData();
-                formData.append('file', file);
-                
-                const response = await fetch(FILE_ANALYSIS_URL, {
-                    method: 'POST',
-                    body: formData,
-                });
+    let progressInterval;
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Server error occurred.');
+    // --- UI Reset ---
+    if (fileAnalysis.button) fileAnalysis.button.disabled = true;
+    if (fileAnalysis.results) fileAnalysis.results.style.display = 'none';
+    if (fileAnalysis.errorDisplay) fileAnalysis.errorDisplay.style.display = 'none'; // Hide old errors
+    if (fileAnalysis.progress.container) fileAnalysis.progress.container.style.display = 'block';
+    if (fileAnalysis.stats.container) fileAnalysis.stats.container.style.display = 'none';
+    if (fileAnalysis.downloadBtn) fileAnalysis.downloadBtn.classList.add('hidden');
+    if (fileAnalysis.uploadUI.uploadProgress) fileAnalysis.uploadUI.uploadProgress.style.display = 'block';
+    
+    try {
+        // --- Progress Bar Simulation ---
+        if (fileAnalysis.uploadUI.progressFill && fileAnalysis.uploadUI.uploadPercentage) {
+            fileAnalysis.uploadUI.progressFill.style.width = '0%';
+            fileAnalysis.uploadUI.uploadPercentage.textContent = '0%';
+            let progress = 0;
+            progressInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += 5;
+                    fileAnalysis.uploadUI.progressFill.style.width = `${progress}%`;
+                    fileAnalysis.uploadUI.uploadPercentage.textContent = `${progress}%`;
                 }
+            }, 200);
+        }
 
-                const results = await response.json();
-                
-                // End progress animation
-                clearInterval(progressInterval);
-                fileAnalysis.uploadUI.progressFill.style.width = '100%';
-                fileAnalysis.uploadUI.uploadPercentage.textContent = '100%';
-                
-                // Update stats and show results
-                fileAnalysis.stats.total.textContent = results.length;
-                fileAnalysis.stats.real.textContent = results.filter(r => r.prediction === 'REAL').length;
-                fileAnalysis.stats.fake.textContent = results.filter(r => r.prediction === 'FAKE').length;
-                
-                window.fileResults = results;
-
-                setTimeout(() => {
-                    fileAnalysis.uploadUI.uploadProgress.style.display = 'none';
-                    fileAnalysis.progress.container.style.display = 'none';
-                    fileAnalysis.stats.container.style.display = 'block';
-                    fileAnalysis.downloadBtn.classList.remove('hidden');
-                }, 500);
-
-            } catch (error) {
-                console.error('Analysis failed:', error);
-                if (progressInterval) {
-                    clearInterval(progressInterval);
-                }
-                fileAnalysis.uploadUI.uploadProgress.style.display = 'none';
-                fileAnalysis.results.innerHTML = `<p class="error-message">Failed to analyze file: ${error.message}</p>`;
-            } finally {
-                fileAnalysis.button.disabled = false;
-                console.log('File analysis completed');
-            }
+        // --- API Call ---
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(FILE_ANALYSIS_URL, {
+            method: 'POST',
+            body: formData,
         });
 
-        // Set up download handler for file analysis
+        if(progressInterval) clearInterval(progressInterval);
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Server returned an invalid error format.' }));
+            throw new Error(errorData.error || 'Server error occurred.');
+        }
+
+        const results = await response.json();
+        
+        // --- Display successful results ---
+        if (fileAnalysis.uploadUI.progressFill) fileAnalysis.uploadUI.progressFill.style.width = '100%';
+        if (fileAnalysis.uploadUI.uploadPercentage) fileAnalysis.uploadUI.uploadPercentage.textContent = '100%';
+        
+        if (fileAnalysis.stats.total) fileAnalysis.stats.total.textContent = results.length;
+        if (fileAnalysis.stats.real) fileAnalysis.stats.real.textContent = results.filter(r => r.prediction === 'REAL').length;
+        if (fileAnalysis.stats.fake) fileAnalysis.stats.fake.textContent = results.filter(r => r.prediction === 'FAKE').length;
+        
+        window.fileResults = results;
+
+        setTimeout(() => {
+            if (fileAnalysis.uploadUI.uploadProgress) fileAnalysis.uploadUI.uploadProgress.style.display = 'none';
+            if (fileAnalysis.progress.container) fileAnalysis.progress.container.style.display = 'none';
+            if (fileAnalysis.stats.container) fileAnalysis.stats.container.style.display = 'block';
+            if (fileAnalysis.results) fileAnalysis.results.style.display = 'block'; // Show the main results container
+            if (fileAnalysis.downloadBtn) fileAnalysis.downloadBtn.classList.remove('hidden');
+        }, 500);
+
+    } catch (error) {
+        console.error('Analysis failed:', error);
+        if (progressInterval) clearInterval(progressInterval);
+        
+        // --- Safely display error message in the NEW container ---
+        if (fileAnalysis.uploadUI.uploadProgress) fileAnalysis.uploadUI.uploadProgress.style.display = 'none';
+        if (fileAnalysis.progress.container) fileAnalysis.progress.container.style.display = 'none';
+        if (fileAnalysis.results) fileAnalysis.results.style.display = 'none'; // Ensure results are hidden
+
+        if (fileAnalysis.errorDisplay) {
+            fileAnalysis.errorDisplay.textContent = `Failed to analyze file: ${error.message}`;
+            fileAnalysis.errorDisplay.style.display = 'block'; // Show the error
+        } else {
+            alert(`Failed to analyze file: ${error.message}`);
+        }
+    } finally {
+        if (fileAnalysis.button) fileAnalysis.button.disabled = false;
+        console.log('File analysis completed');
+    }
+});
+        // ## END: UPDATED AND CORRECTED SUBMIT HANDLER ##
+
+
         if (fileAnalysis.downloadBtn) {
             fileAnalysis.downloadBtn.addEventListener('click', () => {
                 if (!window.fileResults || !window.fileResults.length) {
@@ -166,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ...window.fileResults.map(result => [
                         `"${result.review.replace(/"/g, '""')}"`,
                         result.prediction,
-                        `${result.authenticity_score}%`
+                        `${result.confidence_score}`
                     ])
                 ].map(row => row.join(',')).join('\n');
 
@@ -205,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const startTime = Date.now();
 
-            // Update UI to loading state
             textAnalysis.button.textContent = 'Analyzing...';
             textAnalysis.button.disabled = true;
             textAnalysis.results.style.display = 'none';
@@ -223,26 +242,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await response.json();
 
-                // Update result icon and text
                 const resultIcon = textAnalysis.results.querySelector('.result-icon');
                 const resultText = textAnalysis.results.querySelector('.result-text');
                 
                 resultIcon.innerHTML = data.prediction === 'REAL' 
                     ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg>'
                     : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-                
+
+                resultIcon.className = `result-icon ${data.prediction.toLowerCase()}`;
+
                 resultText.textContent = data.prediction === 'REAL' 
                     ? 'This text appears to be real.'
                     : 'This text appears to be fake.';
 
-                // Update analysis details
-                textAnalysis.confidenceScore.textContent = `${data.authenticity_score}%`;
+                textAnalysis.confidenceScore.textContent = data.confidence_score;
                 textAnalysis.analysisTime.textContent = `${((Date.now() - startTime) / 1000).toFixed(2)}s`;
 
-                // Show results
                 textAnalysis.results.style.display = 'block';
-                textAnalysis.results.className = `result-section ${data.prediction.toLowerCase()}`;
-
+        
             } catch (error) {
                 console.error('Analysis failed:', error);
                 textAnalysis.results.style.display = 'block';
@@ -278,7 +295,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Update UI to loading state
             urlAnalysis.button.textContent = 'Analyzing...';
             urlAnalysis.button.disabled = true;
             urlAnalysis.results.style.display = 'block';
@@ -302,7 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Create results table
                 const table = document.createElement('table');
                 table.innerHTML = `
                     <thead>
@@ -310,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <th>Count</th>
                             <th>Review</th>
                             <th>Prediction</th>
-                            <th>Authenticity</th>
+                            <th>Confidence</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -319,18 +334,15 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <td>${index + 1}</td>
                                 <td>${result.review_text}</td>
                                 <td>${result.prediction}</td>
-                                <td>${result.authenticity_score}%</td>
+                                <td>${result.confidence_score}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 `;
 
-                // Update UI with results
                 urlAnalysis.content.innerHTML = '';
                 urlAnalysis.content.appendChild(table);
                 urlAnalysis.downloadBtn.classList.remove('hidden');
-
-                // Store results for download
                 window.latestResults = results;
 
             } catch (error) {
@@ -346,7 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Set up download handler
         if (urlAnalysis.downloadBtn) {
             urlAnalysis.downloadBtn.addEventListener('click', () => {
                 if (!window.latestResults || !window.latestResults.length) {
@@ -355,12 +366,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const csv = [
-                    ['Count', 'Review', 'Prediction', 'Authenticity Score'],
+                    ['Count', 'Review', 'Prediction', 'Confidence Score'],
                     ...window.latestResults.map((result, index) => [
                         index + 1,
                         `"${result.review_text.replace(/"/g, '""')}"`,
                         result.prediction,
-                        `${result.authenticity_score}%`
+                        `${result.confidence_score}`
                     ])
                 ].map(row => row.join(',')).join('\n');
 
@@ -376,4 +387,132 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    // ## FINAL CORRECTED VERSION ## - Cross-Check Analysis Handler
+    const crossCheck = {
+        form: document.getElementById('cross-check-form'),
+        hotelInput: document.getElementById('hotel-name-input'),
+        reviewInput: document.getElementById('review-text-input'),
+        button: document.getElementById('cross-check-btn'),
+        resultsContainer: document.getElementById('cross-check-result'),
+    };
+
+    if (crossCheck.form) {
+        console.log('Setting up GRANULAR cross-check analysis handler');
+        
+        crossCheck.form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const hotelName = crossCheck.hotelInput.value;
+            const reviewText = crossCheck.reviewInput.value;
+
+            if (!hotelName || !reviewText) {
+                alert('Please provide both a hotel name and a review text.');
+                return;
+            }
+
+            crossCheck.button.textContent = 'Analyzing...';
+            crossCheck.button.disabled = true;
+            crossCheck.resultsContainer.style.display = 'none';
+            crossCheck.resultsContainer.innerHTML = ''; // Clear previous results
+
+            try {
+                const response = await fetch(CROSS_CHECK_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        hotel_name: hotelName,
+                        review_text: reviewText
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || 'Server returned an error.');
+                }
+
+                const data = await response.json();
+                
+                // --- DYNAMICALLY BUILD THE NEW RESULTS UI ---
+
+                // 1. Create the main header for the overall verdict
+                const resultHeader = document.createElement('div');
+                resultHeader.className = 'result-header';
+                
+                const verdictIcon = document.createElement('div');
+                verdictIcon.className = 'result-icon';
+
+                const verdictText = document.createElement('h3');
+                verdictText.id = 'result-verdict-text';
+
+                resultHeader.append(verdictIcon, verdictText);
+
+                // 2. Set content based on the overall verdict
+                // ## UPDATED FOR USER-FRIENDLY LABELS ##
+                if (data.overall_verdict === 'FAKE_REVIEW') {
+                    verdictIcon.classList.add('fake'); // Red icon
+                    verdictIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                    verdictText.textContent = 'Fake Review';
+                } else if (data.overall_verdict === 'GENUINE_REVIEW') {
+                    verdictIcon.classList.add('real'); // Green icon
+                    verdictIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg>';
+                    verdictText.textContent = 'Genuine Review';
+                } else { // Inconclusive
+                    verdictIcon.classList.add('neutral'); // Gray icon
+                    verdictIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+                    verdictText.textContent = 'Inconclusive';
+                }
+                
+                crossCheck.resultsContainer.appendChild(resultHeader);
+                
+                // 3. Create the detailed breakdown for each clause
+                if (data.analysis && data.analysis.length > 0) {
+                    const analysisList = document.createElement('div');
+                    analysisList.className = 'analysis-breakdown';
+
+                    data.analysis.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = `analysis-card-item ${item.is_outlier ? 'outlier' : 'consistent'}`;
+                        
+                        card.innerHTML = `
+                            <div class="analysis-card-header">
+                                <span class="clause-text">"${item.clause}"</span>
+                            </div>
+                            <div class="analysis-card-body">
+                                <div class="detail-item">
+                                    <span class="detail-label">Detected Aspect</span>
+                                    <span class="detail-value">${item.aspect}</span>
+                                 </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Sentiment</span>
+                                    <span class="detail-value sentiment-${item.sentiment}">${item.sentiment}</span>
+                                </div>
+                            </div>
+                            <div class="analysis-card-footer">
+                                <p class="reason">${item.reason}</p>
+                            </div>
+                        `;
+                        analysisList.appendChild(card);
+                    });
+
+                    crossCheck.resultsContainer.appendChild(analysisList);
+                } else if (data.reason) { // Handle inconclusive cases with a reason
+                    const reasonPara = document.createElement('p');
+                    reasonPara.className = 'result-reason';
+                    reasonPara.textContent = data.reason;
+                    crossCheck.resultsContainer.appendChild(reasonPara);
+                }
+
+                crossCheck.resultsContainer.style.display = 'block';
+
+            } catch (error) {
+                console.error('Cross-check failed:', error);
+                crossCheck.resultsContainer.innerHTML = `<p class="error-message">An error occurred: ${error.message}</p>`;
+                crossCheck.resultsContainer.style.display = 'block';
+            } finally {
+                crossCheck.button.textContent = 'Cross-Check Review';
+                crossCheck.button.disabled = false;
+            }
+        });
+    }
+
 });

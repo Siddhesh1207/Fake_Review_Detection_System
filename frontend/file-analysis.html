@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>File Analysis - VeriSure AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -10,18 +9,17 @@
   </head>
   <body>
     <div id="app">
-      <!-- Header -->
       <header class="header" id="header">
         <div class="container">
-          <div class="nav-brand">
-                        <div class="logo-img"></div>
+          <a href="index.html" class="nav-brand">
+            <img src="Verisurelogo.png" alt="VeriSure Logo" class="logo-img">
             <h2 class="logo">VeriSure</h2>
-          </div>
+          </a>
           <nav class="nav" id="nav">
             <a href="index.html" class="nav-link">Home</a>
             <a href="text-analysis.html" class="nav-link">Text Analysis</a>
             <a href="url-analysis.html" class="nav-link">URL Analysis</a>
-            <a href="#about" class="nav-link">About</a>
+            <a href="cross-check.html" class="nav-link">Cross-Check</a>
           </nav>
           <button class="mobile-menu-btn" id="mobile-menu-btn">
             <span></span>
@@ -31,119 +29,121 @@
         </div>
       </header>
 
-      <!-- File Analysis Section -->
-      <section class="analysis-page">
+      <main class="analysis-page">
         <div class="container">
           <div class="page-header">
             <h1 class="page-title">Bulk Review Analysis</h1>
-            <p class="page-subtitle">Upload a CSV file containing reviews to analyze them in bulk</p>
+            <p class="page-subtitle">Upload a CSV file to process thousands of reviews at once and get a comprehensive report.</p>
           </div>
           
           <div class="analysis-card">
-            <div class="input-section">
-              <form id="file-upload-form" class="file-upload-container" onsubmit="event.preventDefault();">
-                <label for="file-input" class="input-label">Upload CSV File</label>
-                <div class="file-upload-ui">
-                  <div class="file-input-wrapper">
-                    <div class="upload-zone">
-                      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
-                      </svg>
-                      <p class="upload-text">Choose a CSV file or drag it here</p>
-                      <input 
-                        type="file" 
-                        id="file-input" 
-                        name="file"
-                        accept=".csv"
-                        class="file-input" 
-                        onclick="this.value = null;"
-                    </div>
-                    <div class="file-info" style="display: none;">
-                      <span id="file-name">No file selected</span>
-                      <button type="button" class="btn btn-small" id="remove-file">✕</button>
-                    </div>
-                    <div class="upload-progress" style="display: none;">
-                      <div class="upload-progress-bar">
-                        <div class="progress-fill"></div>
-                      </div>
-                      <span class="upload-status">Uploading... <span id="upload-percentage">0%</span></span>
-                    </div>
+            <form id="file-upload-form" class="file-upload-container">
+              <div class="upload-section">
+                <label for="file-input" class="upload-zone">
+                  <div class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
                   </div>
-                  <p class="file-format-info">Your CSV file should contain a column named "review" with the reviews to analyze</p>
-                  <div class="action-buttons">
-                    <button type="submit" class="btn btn-primary" id="analyze-file-btn" disabled>
-                      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                      </svg>
-                      Analyze File
-                    </button>
+                  <div class="upload-text">
+                    <span class="upload-text-main">Click to upload or drag and drop</span>
+                    <span class="upload-text-sub">CSV files only</span>
                   </div>
+                  <input type="file" id="file-input" name="file" accept=".csv" class="file-input-hidden">
+                </label>
+                <div class="file-info" style="display: none;">
+                  <span class="file-icon-static">📄</span>
+                  <span id="file-name" class="file-name-text">No file selected</span>
+                  <button type="button" class="btn-remove-file" id="remove-file" title="Remove file">×</button>
                 </div>
-              </form>
-            </div>
-            
-            <div class="result-section" id="file-result" style="display: none;">
-              <h3 class="result-title">Analysis Results</h3>
-              <div class="result-content">
-                <div class="progress-container" style="display: none;">
-                  <div class="progress-bar">
-                    <div class="progress"></div>
-                  </div>
-                  <p class="progress-text">Analyzing reviews... <span id="progress-percentage">0%</span></p>
+                <div class="upload-progress" style="display: none;">
+                  <div class="progress-fill"></div>
+                  <span id="upload-percentage" class="upload-percentage-text">0%</span>
                 </div>
-                <div class="stats-container" style="display: none;">
-                  <div class="stat-item">
-                    <span class="stat-label">Total Reviews:</span>
-                    <span class="stat-value" id="total-reviews">--</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-label">Real Reviews:</span>
-                    <span class="stat-value" id="real-reviews">--</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-label">Fake Reviews:</span>
-                    <span class="stat-value" id="fake-reviews">--</span>
-                  </div>
-                </div>
-                <button id="download-results-btn" class="btn btn-secondary hidden">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  Download Results
-                </button>
               </div>
+              <p class="file-format-info">Your CSV file must contain a column named "review".</p>
+              <button type="submit" class="btn btn-primary btn-full-width" id="analyze-file-btn" disabled>Analyze File</button>
+            </form>
+            
+            <div class="progress-container" style="display: none;"></div>
+
+            <div id="file-error-display" class="error-message" style="display: none;"></div>
+
+            <div id="file-result" style="display: none;" class="result-section">
+                <h3 class="result-title">Analysis Summary</h3>
+                <div class="stats-container">
+                    <div class="stat-item">
+                      <span class="stat-value" id="total-reviews">--</span>
+                      <span class="stat-label">Total Reviews</span>
+                    </div>
+                    <div class="stat-item real">
+                      <span class="stat-value" id="real-reviews">--</span>
+                      <span class="stat-label">Genuine</span>
+                    </div>
+                    <div class="stat-item fake">
+                      <span class="stat-value" id="fake-reviews">--</span>
+                      <span class="stat-label">Fake</span>
+                    </div>
+                </div>
+                <button id="download-results-btn" class="btn btn-secondary btn-full-width hidden">Download Full Report</button>
+            </div>
+            </div>
+      </main>
+
+      <section class="info-section reveal">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">A simple three-step process to analyze your bulk data.</p>
+          </div>
+          <div class="info-grid">
+            <div class="info-card">
+              <span class="info-step-number">1</span>
+              <h3 class="info-title">Upload Your CSV</h3>
+              <p class="info-description">Select or drag & drop a CSV file. Ensure it has a column named "review" containing the text you want to analyze.</p>
+            </div>
+            <div class="info-card">
+              <span class="info-step-number">2</span>
+              <h3 class="info-title">AI Analysis</h3>
+              <p class="info-description">Our AI processes each review, identifying linguistic patterns of fake content to provide a prediction and confidence score.</p>
+            </div>
+            <div class="info-card">
+              <span class="info-step-number">3</span>
+              <h3 class="info-title">Get Report</h3>
+              <p class="info-description">Receive an instant summary of genuine vs. fake reviews and download a detailed CSV report with results for each entry.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Footer -->
-      <footer class="footer" id="footer">
+      <footer class="footer" id="contact">
         <div class="container">
-          <div class="footer-content">
-            <div class="footer-left">
-              <div class="footer-links">
-                <a href="#about" class="footer-link">About</a>
-                <a href="#team" class="footer-link">Team</a>
-                <a href="#contact" class="footer-link">Contact</a>
-                <a href="#privacy" class="footer-link">Privacy</a>
+            <div class="footer-content">
+                <div class="footer-left">
+                  <div class="footer-links">
+                    <a href="#" class="footer-link">About</a>
+                    <a href="#" class="footer-link">Team</a>
+                    <a href="#" class="footer-link">Contact</a>
+                    <a href="#" class="footer-link">Privacy</a>
+                  </div>
+                </div>
+                <div class="social-icons">
+                  <a href="#" class="social-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                  </a>
+                  <a href="#" class="social-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  </a>
+                </div>
               </div>
-            </div>
-          </div>
           <div class="footer-bottom">
             <p>&copy; 2025 VeriSure AI. All rights reserved.</p>
           </div>
         </div>
       </footer>
     </div>
-    <script src="upload.js"></script>
-    <script src="logo-placeholder.js"></script>
     <script src="connection.js"></script>
   </body>
 </html>
