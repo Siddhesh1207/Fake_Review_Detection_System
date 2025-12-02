@@ -1,4 +1,5 @@
 import time
+import os
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -17,11 +18,19 @@ def scrape_booking_reviews(url, max_reviews=50):
     try:
         service = Service()
         options = webdriver.ChromeOptions()
-        # --- STEALTH OPTIONS ---
-        options.add_argument("start-maximized")
-        options.add_argument("--headless") # Run in background
+        options = webdriver.ChromeOptions()
+        
+        # --- ADD THESE LINES FOR RENDER DEPLOYMENT ---
+        # This tells Selenium where to find the Chromium browser on the server
+        options.binary_location = "/usr/bin/chromium"
+        options.add_argument("--headless") 
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        # ---------------------------------------------
+
+        # options.add_argument("start-maximized") # You can remove or comment this out for server
+        # --- STEALTH OPTIONS ---
+        options.add_argument("start-maximized")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
         # To run without a visible browser, uncomment the line below
